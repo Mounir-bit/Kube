@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-deployment
+  labels:
+    app: postgresql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgresql
+  template:
+    metadata:
+      labels:
+        app: postgresql
+    spec:
+      containers:
+      - name: postgresql
+        image: "postgresql:5.6"
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - mountPath: "/var/lib/postgresql"
+          name: postgresql-pd
+        env:
+        - name: postgresql_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: dbrootpass
+        - name: postgresql_USER
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: dbuser
+        - name: postgresql_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: dbpass
+        - name: postgresql_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: dbname
+      volumes:
+        - name: postgresql-pd
+          persistentVolumeClaim:
+            claimName: app-pvc
